@@ -12,7 +12,7 @@ sceneView.ignoresSiblingOrder = true
 if let scene = GameScene(fileNamed: "GameScene") {
     // Set the scale mode to scale to fit the window
     scene.scaleMode = .aspectFill
-    scene.physicsBody = SKPhysicsBody(edgeLoopFrom:  CGRect(x: -320, y: -130, width: scene.frame.width, height: 370))
+    scene.physicsBody = SKPhysicsBody(edgeLoopFrom:  CGRect(x: 0, y: 0, width: scene.frame.width, height: 110))
     sceneView.showsPhysics = true
     
     // Present the scene

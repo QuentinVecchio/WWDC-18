@@ -2,7 +2,7 @@ import SpriteKit
 
 public class GameScene: SKScene, SKPhysicsContactDelegate {
     // Constants
-    let distanceJump : CGFloat = 100
+    let distanceJump : CGFloat = 60
     let distanceMove : CGFloat = 10
     let moveDuration : Double = 0.1
     let checkpoints = [CGPoint(x: 0, y: 0)]
@@ -15,6 +15,9 @@ public class GameScene: SKScene, SKPhysicsContactDelegate {
     private var background : SKNode!
     private var player : SKSpriteNode!
     private var livesLabel : SKLabelNode!
+    private var frenchFlag : SKLabelNode!
+    private var swedishFlag : SKLabelNode!
+    private var usFlag : SKLabelNode!
     
     // Buttons
     private var buttonLeft : SKSpriteNode!
@@ -38,7 +41,7 @@ public class GameScene: SKScene, SKPhysicsContactDelegate {
         physicsWorld.contactDelegate = self
         
         // Background
-        if let _background = childNode(withName: "//background") {
+        if let _background = childNode(withName: "//background1") {
             background = _background
             background.zPosition = -1
         }
@@ -54,6 +57,20 @@ public class GameScene: SKScene, SKPhysicsContactDelegate {
         if let _livesLabel = childNode(withName: "//lives") as? SKLabelNode {
             livesLabel = _livesLabel
             livesLabel.zPosition = 3
+        }
+        
+        // Flags
+        if let _flag = childNode(withName: "//fr_flag") as? SKLabelNode {
+            frenchFlag = _flag
+            frenchFlag.zPosition = 1
+        }
+        if let _flag = childNode(withName: "//sw_flag") as? SKLabelNode {
+            swedishFlag = _flag
+            swedishFlag.zPosition = 1
+        }
+        if let _flag = childNode(withName: "//us_flag") as? SKLabelNode {
+            usFlag = _flag
+            usFlag.zPosition = 1
         }
         
         // Buttons
@@ -181,7 +198,7 @@ public class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func initPlayer() {
-        player.position = CGPoint(x: -170, y:-80)
+        player.position = CGPoint(x: 130, y: 160)
         player.removeAction(forKey: "runLeft")
         player.removeAction(forKey: "runRight")
         player.removeAction(forKey: "jump")
@@ -199,6 +216,7 @@ public class GameScene: SKScene, SKPhysicsContactDelegate {
     func stopMoveLeft() {
         print("Move left ended")
         background.removeAction(forKey: "moveLeft")
+        background.removeAction(forKey: "moveRight")
         player.texture = SKTexture(imageNamed:"playerLeft")
     }
     
@@ -210,9 +228,9 @@ public class GameScene: SKScene, SKPhysicsContactDelegate {
     
     func stopMoveRight() {
         print("Move right ended")
+        background.removeAction(forKey: "moveLeft")
         background.removeAction(forKey: "moveRight")
         player.texture = SKTexture(imageNamed:"playerRight")
-        player.removeAction(forKey: "runRight")
     }
     
     @objc func jump(sender: UITapGestureRecognizer) {
