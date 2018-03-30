@@ -2,137 +2,176 @@ import SpriteKit
 
 public class GameScene: SKScene, SKPhysicsContactDelegate {
     // Constants
-    let distanceJump : CGFloat = 60
-    let distanceMove : CGFloat = 10
-    let moveDuration : Double = 0.1
-    let checkpoints = [CGPoint(x: 0, y: 0)]
-    var checkpointIndex = 0
+    let distanceJump : CGFloat = 70
+    let checkpoints = [CGPoint(x: 0, y: 0), CGPoint(x: -1920, y: 0), CGPoint(x: -3840, y: 0), CGPoint(x: -4480, y: 0)]
     
     // Variables
     var lives = 2
+    var checkpointIndex = 0
+    var isResumed = false
+    var canJump = true
     
     // Nodes
-    private var background : SKNode!
+    private var world : SKNode!
     private var player : SKSpriteNode!
     private var livesLabel : SKLabelNode!
-    private var frenchFlag : SKLabelNode!
-    private var swedishFlag : SKLabelNode!
-    private var usFlag : SKLabelNode!
+    private var frFlag : SKSpriteNode!
+    private var swFlag : SKSpriteNode!
+    private var usFlag : SKSpriteNode!
+    private var wwdcFlag : SKSpriteNode!
+    private var frEmoji : SKLabelNode!
+    private var swEmoji : SKLabelNode!
+    private var usEmoji : SKLabelNode!
+    private var wwdcEmoji : SKLabelNode!
     
     // Buttons
-    private var buttonLeft : SKSpriteNode!
-    private var buttonRight : SKSpriteNode!
-    private var buttonJump : SKSpriteNode!
-    
-    private var lastBackgroundPosition : CGPoint = CGPoint.zero
+    private var buttonResumePause : SKSpriteNode!
     
     // Actions
-    private var moveLeftAction : SKAction!
-    private var moveRightAction : SKAction!
-    private var moveAction: SKAction!
-    private var playerRunLeftAction: SKAction!
-    private var playerRunRightAction: SKAction!
-    private var playerJumpLeftAction: SKAction!
-    private var playerJumpRightAction: SKAction!
     private var playerKilledAction: SKAction!
     
     public override func didMove(to view: SKView) {
         // Physics
         physicsWorld.contactDelegate = self
         
+        // World
+        if let _world = childNode(withName: "//world") {
+            world = _world
+        }
+        
         // Background
-        if let _background = childNode(withName: "//background1") {
-            background = _background
-            background.zPosition = -1
+        enumerateChildNodes(withName: "//background") { node, _ in
+            if let background = node as? SKSpriteNode {
+                background.zPosition = -1
+            }
         }
         
         // Player
         if let _player = childNode(withName: "//player") as? SKSpriteNode {
             player = _player
-            player.zPosition = 2
+            player.zPosition = 3
             player.physicsBody!.contactTestBitMask = player.physicsBody!.collisionBitMask
         }
         
-        // Lifes
+        // Lives
         if let _livesLabel = childNode(withName: "//lives") as? SKLabelNode {
             livesLabel = _livesLabel
-            livesLabel.zPosition = 3
+            livesLabel.zPosition = 4
         }
         
         // Flags
-        if let _flag = childNode(withName: "//fr_flag") as? SKLabelNode {
-            frenchFlag = _flag
-            frenchFlag.zPosition = 1
+        if let _flag = childNode(withName: "//fr_flag") as? SKSpriteNode {
+            frFlag = _flag
+            frFlag.zPosition = 2
         }
-        if let _flag = childNode(withName: "//sw_flag") as? SKLabelNode {
-            swedishFlag = _flag
-            swedishFlag.zPosition = 1
+        
+        if let _flag = childNode(withName: "//sw_flag") as? SKSpriteNode {
+            swFlag = _flag
+            swFlag.zPosition = 2
         }
-        if let _flag = childNode(withName: "//us_flag") as? SKLabelNode {
+        
+        if let _flag = childNode(withName: "//us_flag") as? SKSpriteNode {
             usFlag = _flag
-            usFlag.zPosition = 1
+            usFlag.zPosition = 2
+        }
+        
+        if let _flag = childNode(withName: "//wwdc_flag") as? SKSpriteNode {
+            wwdcFlag = _flag
+            wwdcFlag.zPosition = 2
+        }
+        
+        // Emojis
+        if let _emoji = childNode(withName: "//fr_emoji") as? SKLabelNode {
+            frEmoji = _emoji
+            frEmoji.zPosition = 4
+        }
+        
+        if let _emoji = childNode(withName: "//sw_emoji") as? SKLabelNode {
+            swEmoji = _emoji
+            swEmoji.zPosition = 4
+        }
+        
+        if let _emoji = childNode(withName: "//us_emoji") as? SKLabelNode {
+            usEmoji = _emoji
+            usEmoji.zPosition = 4
+        }
+        
+        if let _emoji = childNode(withName: "//wwdc_emoji") as? SKLabelNode {
+            wwdcEmoji = _emoji
+            wwdcEmoji.zPosition = 4
         }
         
         // Buttons
-        if let _buttonLeft = childNode(withName: "//buttonLeft") as? SKSpriteNode {
-            buttonLeft = _buttonLeft
-            buttonLeft.zPosition = 4
+        if let _buttonResumePause = childNode(withName: "//buttonResumePause") as? SKSpriteNode {
+            buttonResumePause = _buttonResumePause
+            buttonResumePause.zPosition = 5
         }
-        if let _buttonRight = childNode(withName: "//buttonRight") as? SKSpriteNode {
-            buttonRight = _buttonRight
-            buttonRight.zPosition = 4
-        }
-        if let _buttonJump = childNode(withName: "//buttonJump") as? SKSpriteNode {
-            buttonJump = _buttonJump
-            buttonJump.zPosition = 4
+        
+        // Bottom
+        enumerateChildNodes(withName: "//bottom") { node, _ in
+            if let bottom = node as? SKSpriteNode {
+                bottom.zPosition = 2
+            }
         }
         
         // Bricks
         enumerateChildNodes(withName: "//brick") { node, _ in
             if let brick = node as? SKSpriteNode {
-                brick.zPosition = 1
+                brick.zPosition = 2
             }
         }
         
         // Robots
         enumerateChildNodes(withName: "//robot") { node, _ in
             if let robot = node as? SKSpriteNode {
-                robot.zPosition = 1
+                robot.zPosition = 2
             }
         }
         
         // Actions
-        moveAction = SKAction.move(by:  CGVector(dx:distanceMove, dy:0), duration: moveDuration)
-        moveLeftAction = SKAction.repeatForever(SKAction.sequence([moveAction]))
-        moveRightAction = SKAction.repeatForever(SKAction.sequence([moveAction.reversed()]))
         if let node = SKNode(fileNamed: "Actions"), let actions = node.value(forKey: "actions") as? [String:SKAction] {
-            playerRunLeftAction = actions["playerRunLeft"]
-            playerRunRightAction = actions["playerRunRight"]
-            playerJumpLeftAction = actions["playerJumpLeft"]
-            playerJumpRightAction = actions["playerJumpRight"]
             playerKilledAction = actions["playerKilled"]
         } else {
-            print("fail")
+            print("Failed to load Action.")
         }
         
-        // UI Gesture
-        let tap = UITapGestureRecognizer(target: self, action: #selector(jump(sender:)))
-        tap.numberOfTapsRequired = 2
-        view.addGestureRecognizer(tap)
+        // Physics
+        self.physicsBody = SKPhysicsBody(edgeLoopFrom: CGRect(x: 0, y: 0, width: self.frame.width, height: 755))
+        
+        resume()
     }
     
     public func didBegin(_ contact: SKPhysicsContact) {
-        if contact.bodyA.node?.name == "player" && contact.bodyB.node?.name == "robot" {
-            playerKilled()
+        if let nodeA = contact.bodyA.node?.name, let nodeB = contact.bodyB.node?.name {
+            if (nodeA == "robot" || nodeB == "robot") && (nodeA == "player" || nodeB == "player") {
+                playerKilled()
+            } else if (nodeA == "bottom" || nodeB == "bottom") && (nodeA == "player" || nodeB == "player") {
+                canJump = true
+            } else if (nodeA == "brick" || nodeB == "brick") && (nodeA == "player" || nodeB == "player") {
+                canJump = true
+            }
         }
     }
     
     public override func update(_ currentTime: TimeInterval) {
         // Update checkpoint
         if checkpointIndex < checkpoints.count-1 {
-            if background.position.distance(to: checkpoints[checkpointIndex]) >
-                background.position.distance(to: checkpoints[checkpointIndex+1]) {
-                checkpointIndex += 1
+            for i in 0..<(checkpoints.count-1) {
+                if world.position.x >= checkpoints[i].x && world.position.x < checkpoints[i+1].x {
+                    checkpointIndex = i
+                    break
+                }
+            }
+            switch checkpointIndex {
+            case 1 :
+                swEmoji.alpha = 1
+            case 2 :
+                usEmoji.alpha = 1
+            case 3:
+                wwdcEmoji.alpha = 1
+                animationFinished()
+            default:
+                frEmoji.alpha = 1
             }
         }
     }
@@ -145,28 +184,30 @@ public class GameScene: SKScene, SKPhysicsContactDelegate {
         let touchedNode = self.atPoint(positionInScene)
         
         if let name = touchedNode.name {
-            if name == "buttonLeft" {
-                moveLeft()
-            } else if name == "buttonRight" {
-                moveRight()
+            if name == "buttonResumePause" {
+                if isResumed {
+                    pause()
+                } else {
+                    resume()
+                }
+            } else {
+                jump()
             }
         }
     }
-
-    public override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard let touch = touches.first else {
-            return
-        }
-        let positionInScene = touch.location(in: self)
-        let touchedNode = self.atPoint(positionInScene)
-        
-        if let name = touchedNode.name {
-            if name == "buttonLeft" {
-                stopMoveLeft()
-            } else if name == "buttonRight" {
-                stopMoveRight()
-            }
-        }
+    
+    func resume() {
+        isResumed = true
+        buttonResumePause.texture = SKTexture(imageNamed:"buttonPause")
+        player.isPaused = false
+        world.isPaused = false
+    }
+    
+    func pause() {
+        isResumed = false
+        buttonResumePause.texture = SKTexture(imageNamed:"buttonResume")
+        player.isPaused = true
+        world.isPaused = true
     }
     
     func playerKilled() {
@@ -177,8 +218,8 @@ public class GameScene: SKScene, SKPhysicsContactDelegate {
             initPlayer()
             player.run(playerKilledAction, withKey: "playerKilled")
 
-            // Background
-            background.run(SKAction.move(to: checkpoints[checkpointIndex], duration: 1.0))
+            // World
+            world.run(SKAction.move(to: checkpoints[checkpointIndex], duration: 1.0))
             
             // Live
             self.livesLabel.text = ""
@@ -190,6 +231,11 @@ public class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
 
+    func animationFinished() {
+        world.removeAction(forKey: "move")
+        print("Finished !!!")
+    }
+    
     func gameFinished(won: Bool) {
         let gameOverScene = GameOverScene(size: size, won: false)
         gameOverScene.scaleMode = scaleMode
@@ -205,35 +251,10 @@ public class GameScene: SKScene, SKPhysicsContactDelegate {
         player.texture = SKTexture(imageNamed:"playerRight")
     }
     
-    // Actions
-    func moveLeft() {
-        print("Move left started")
-        stopMoveRight()
-        background.run(moveLeftAction, withKey: "moveLeft")
-        //player.run(playerRunLeftAction, withKey: "runLeft")
-    }
-    
-    func stopMoveLeft() {
-        print("Move left ended")
-        background.removeAction(forKey: "moveLeft")
-        background.removeAction(forKey: "moveRight")
-        player.texture = SKTexture(imageNamed:"playerLeft")
-    }
-    
-    func moveRight() {
-        print("Move right started")
-        background.run(moveRightAction, withKey: "moveRight")
-        //player.run(playerRunRightAction, withKey: "runRight")
-    }
-    
-    func stopMoveRight() {
-        print("Move right ended")
-        background.removeAction(forKey: "moveLeft")
-        background.removeAction(forKey: "moveRight")
-        player.texture = SKTexture(imageNamed:"playerRight")
-    }
-    
-    @objc func jump(sender: UITapGestureRecognizer) {
-        player.physicsBody?.applyImpulse(CGVector(dx: 0, dy: distanceJump))
+    func jump() {
+        if canJump {
+            player.physicsBody?.applyImpulse(CGVector(dx: 0, dy: distanceJump))
+            canJump = false
+        }
     }
 }
