@@ -1,11 +1,3 @@
-//
-//  Extension.swift
-//  Steve
-//
-//  Created by Quentin Vecchio on 19/02/2018.
-//  Copyright © 2018 Quentin Vecchio. All rights reserved.
-//
-
 import Foundation
 import CoreGraphics
 

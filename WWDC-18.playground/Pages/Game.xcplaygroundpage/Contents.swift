@@ -1,5 +1,4 @@
-//: A SpriteKit based Playground
-
+//: [Previous](@previous)
 import PlaygroundSupport
 import SpriteKit
 import UIKit
@@ -9,14 +8,13 @@ sceneView.showsFPS = true
 sceneView.showsNodeCount = true
 sceneView.ignoresSiblingOrder = true
 
-if let scene = GameScene(fileNamed: "GameScene") {
-    // Set the scale mode to scale to fit the window
+if let scene = PresentationScene(fileNamed: "PresentationScene") {
     scene.scaleMode = .aspectFill
     sceneView.showsPhysics = true
-    
-    // Present the scene
     sceneView.presentScene(scene)
 }
 
 PlaygroundPage.current.needsIndefiniteExecution = true
 PlaygroundSupport.PlaygroundPage.current.liveView = sceneView
+
+//: [Next](@next)
