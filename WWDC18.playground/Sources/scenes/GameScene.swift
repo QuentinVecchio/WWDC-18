@@ -1,4 +1,5 @@
 import SpriteKit
+import AVFoundation
 
 public class GameScene: SKScene, SKPhysicsContactDelegate {
     // Constants
@@ -12,6 +13,10 @@ public class GameScene: SKScene, SKPhysicsContactDelegate {
     var isResumed = false
     var canJump = false
     var playerIsKilled = false
+    private var container :SKView!
+    
+    // Sound
+    var song: AVAudioPlayer!
     
     // Nodes
     private var world : SKNode!
@@ -40,6 +45,8 @@ public class GameScene: SKScene, SKPhysicsContactDelegate {
     private var playerHappy: SKAction!
     
     public override func didMove(to view: SKView) {
+        container = view
+        
         // Physics
         physicsWorld.contactDelegate = self
         self.physicsBody = SKPhysicsBody(edgeLoopFrom: CGRect(x: -10, y: 0, width: self.frame.width+10, height: 755))
@@ -172,6 +179,17 @@ public class GameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
         
+        // Song
+        do {
+            let path = Bundle.main.path(forResource: "song.wav", ofType:nil)!
+            let url = URL(fileURLWithPath: path)
+            song = try AVAudioPlayer(contentsOf: url)
+            song.numberOfLoops = 30
+            song.prepareToPlay()
+        } catch {
+           print("Can't play song")
+        }
+        
         resume()
     }
     
@@ -237,7 +255,9 @@ public class GameScene: SKScene, SKPhysicsContactDelegate {
             } else if name == "buttonResume" || name == "labelResume" {
                 resume()
             } else if name == "buttonQuit" || name == "labelQuit" {
-                
+                if let superview = self.container.superview as? MainView {
+                    superview.lastSlide()
+                }
             } else {
                 jump()
             }
@@ -261,6 +281,7 @@ public class GameScene: SKScene, SKPhysicsContactDelegate {
             self.world.run(self.moveAction, withKey: "move")
             self.canJump = true
             self.isResumed = true
+            self.song.play()
         }
         let updateChrono = SKAction.run() {
             self.chronoValue -= 1
@@ -283,10 +304,12 @@ public class GameScene: SKScene, SKPhysicsContactDelegate {
         window.isHidden = false
         buttonPause.isHidden = true
         chrono.isHidden = true
+        song.pause()
     }
     
     func playerKilled() {
-        print("Player killed")
+        //print("Player killed")
+        run(SKAction.playSoundFileNamed("died.wav", waitForCompletion: false))
         self.lives -= 1
         if self.lives > 0 {
             // Player
@@ -306,10 +329,10 @@ public class GameScene: SKScene, SKPhysicsContactDelegate {
     }
 
     func runWWDCAnimation() {
-        print("Finished !!!")
+        //print("Finished !!!")
         canJump = false
         isResumed = false
-        
+        self.player.run(self.playerRunAction, withKey: "run")
         world.removeAction(forKey: "move")
         buttonPause.isHidden = true
         
@@ -366,6 +389,7 @@ public class GameScene: SKScene, SKPhysicsContactDelegate {
     func jump() {
         if canJump {
             player.removeAction(forKey: "run")
+            run(SKAction.playSoundFileNamed("jump.wav", waitForCompletion: false))
             player.texture = SKTexture(imageNamed:"playerJump")
             player.physicsBody?.applyImpulse(CGVector(dx: 0, dy: distanceJump))
             canJump = false

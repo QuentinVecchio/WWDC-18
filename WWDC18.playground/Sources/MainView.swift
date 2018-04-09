@@ -14,7 +14,7 @@ public class MainView : UIView, UIScrollViewDelegate {
     var pageControl : UIPageControl = UIPageControl(frame:CGRect(x: 220, y: 410, width: 200, height: 50))
     
     let textSlides = [ """
-    Welcome to my WWDC 18 playground! 😀
+    Welcome in my WWDC 18 playground! 😀
     """,
                        """
     My name is Quentin.
@@ -29,13 +29,17 @@ public class MainView : UIView, UIScrollViewDelegate {
     Today, coding is a real passion. I love to share this passion with my family, my friends and everybody!
     """,
                        """
-    I'm also a huge fan of yours amazing products, technologies and philosophy.
+    I'm also a fan of your products and I love working with your amazing technologies.
     """,
                        """
-    Of course I have others hobbies, like soccer, running and reading!
+    Of course I have other hobbies, like soccer, running and reading!
     """,
                        """
-    To show your my motivation to participate to the WWDC, I developed a game with SpriteKit. I hope you'll enjoy it!
+    To show you my motivation to participate in the WWDC, I developed a game with SpriteKit. I hope you'll enjoy it!
+    """,
+    """
+    The end.
+    I hope you enjoyed my playground 🙂.
     """]
     
     let emojiSlides = [
@@ -62,7 +66,7 @@ public class MainView : UIView, UIScrollViewDelegate {
         
         // Slides
         prepareFirstSlide()
-        for index in 1..<textSlides.count {
+        for index in 1..<textSlides.count-1 {
             prepareSlide(index)
         }
         
@@ -72,10 +76,10 @@ public class MainView : UIView, UIScrollViewDelegate {
         nextButton.backgroundColor = UIColor(red: 0.0, green: 184.0/255, blue: 148.0/255, alpha: 1.0)
         nextButton.addTarget(self, action:#selector(self.nextSlide), for: .touchUpInside)
         addSubview(nextButton)
-        
+
         previousButton = UIButton(frame: CGRect(x: -170, y: 400, width: 150, height: 30))
         previousButton.setTitle("Previous", for: .normal)
-        previousButton.backgroundColor = UIColor(red: 250.0/255, green: 177.0/255, blue: 160.0/255, alpha: 1.0)
+        previousButton.backgroundColor = UIColor(red: 255.0/255, green: 94.0/255, blue: 87.0/255, alpha: 1.0)
         previousButton.addTarget(self, action:#selector(self.previousSlide), for: .touchUpInside)
         addSubview(previousButton)
         
@@ -84,6 +88,14 @@ public class MainView : UIView, UIScrollViewDelegate {
         playButton.backgroundColor = UIColor(red: 116.0/255, green: 185.0/255, blue: 1.0, alpha: 0.4)
         playButton.addTarget(self, action:#selector(self.launchGame), for: .touchUpInside)
         addSubview(playButton)
+        
+        // Image
+        let image = UIImage(named: "profile")
+        profileImage = UIImageView(image: image)
+        profileImage.frame = CGRect(x: 245, y: -240, width: 150, height: 150)
+        profileImage.layer.cornerRadius = 75;
+        profileImage.layer.masksToBounds = true;
+        addSubview(profileImage)
     }
     
     public required init(coder aDecoder: NSCoder) {
@@ -149,8 +161,9 @@ public class MainView : UIView, UIScrollViewDelegate {
         if self.pageControl.currentPage == 1 {
             UIView.animate(withDuration: 1, delay: 0, options: UIViewAnimationOptions.curveLinear, animations: {
                 self.previousButton.center.x += 190
+                self.profileImage.center.y += 260
             }, completion: nil)
-        } else if self.pageControl.currentPage == textSlides.count-1 {
+        } else if self.pageControl.currentPage == textSlides.count-2 {
             UIView.animate(withDuration: 1, delay: 0, options: UIViewAnimationOptions.curveLinear, animations: {
                 self.nextButton.center.x += 190
             }, completion: { _ in
@@ -164,7 +177,7 @@ public class MainView : UIView, UIScrollViewDelegate {
     
     @objc func previousSlide() {
         self.pageControl.currentPage -= 1
-        if self.pageControl.currentPage == textSlides.count-2 {
+        if self.pageControl.currentPage == textSlides.count-3 {
             UIView.animate(withDuration: 1, delay: 0, options: UIViewAnimationOptions.curveLinear, animations: {
                 self.playButton.center.x += 190
             }, completion: { _ in
@@ -175,19 +188,19 @@ public class MainView : UIView, UIScrollViewDelegate {
         } else if self.pageControl.currentPage == 0 {
             UIView.animate(withDuration: 1, delay: 0, options: UIViewAnimationOptions.curveLinear, animations: {
                 self.previousButton.center.x -= 190
+                self.profileImage.center.y -= 260
             }, completion: nil)
         }
         changePage(sender: self)
     }
     
     func configurePageControl() {
-        self.pageControl.numberOfPages = textSlides.count
+        self.pageControl.numberOfPages = textSlides.count-1
         self.pageControl.currentPage = 0
         self.pageControl.tintColor = UIColor.red
         self.pageControl.pageIndicatorTintColor = UIColor.black
         self.pageControl.currentPageIndicatorTintColor = UIColor.green
         self.addSubview(pageControl)
-        
     }
     
     @objc func changePage(sender: AnyObject) -> () {
@@ -201,13 +214,13 @@ public class MainView : UIView, UIScrollViewDelegate {
     
     @objc func launchGame() {
         let sceneView = SKView(frame: CGRect(x:0 , y:0, width: 640, height: 480))
-        sceneView.showsFPS = true
-        sceneView.showsNodeCount = true
+        // sceneView.showsFPS = true
+        // sceneView.showsNodeCount = true
         sceneView.ignoresSiblingOrder = true
         
         if let scene = PresentationScene(fileNamed: "PresentationScene") {
             scene.scaleMode = .aspectFill
-            sceneView.showsPhysics = true
+            // sceneView.showsPhysics = true
             sceneView.presentScene(scene)
             self.subviews.forEach { $0.removeFromSuperview() }
             self.addSubview(sceneView)
@@ -219,4 +232,17 @@ public class MainView : UIView, UIScrollViewDelegate {
         pageControl.currentPage = Int(pageNumber)
     }
     
+    public func lastSlide() {
+        self.subviews.forEach { $0.removeFromSuperview() }
+        
+        // TextView
+        let textView = UITextView(frame: CGRect(x: 70, y: 200, width: 500, height: 100))
+        textView.text = textSlides.last
+        textView.isEditable = false
+        textView.textAlignment = NSTextAlignment.center
+        textView.textColor = UIColor.white
+        textView.backgroundColor = self.backgroundColor
+        textView.font = UIFont(name: "Helvetica Neue", size: 25)
+        self.addSubview(textView)
+    }
 }

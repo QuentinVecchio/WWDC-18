@@ -8,8 +8,11 @@ public class GameOverScene: SKScene {
     private var buttonMenu : SKSpriteNode!
     private var background : SKSpriteNode!
     private var label : SKLabelNode!
-
+    private var container :SKView!
+    
     public override func didMove(to view: SKView) {
+        container = view
+        
         // Physics
         self.physicsBody = SKPhysicsBody(edgeLoopFrom: self.frame)
         
@@ -39,12 +42,10 @@ public class GameOverScene: SKScene {
         // Song
         if (won) {
             label.text = "You won !"
-            //            run(SKAction.playSoundFileNamed(""win".wav",
-            //                                            waitForCompletion: false))
+            run(SKAction.playSoundFileNamed("won.wav", waitForCompletion: false))
         } else {
-            label.text = "You loose"
-            //            run(SKAction.playSoundFileNamed("lose.wav",
-            //                                            waitForCompletion: false))
+            label.text = "You lost"
+            run(SKAction.playSoundFileNamed("lost.wav", waitForCompletion: false))
         }
     }
     
@@ -62,8 +63,10 @@ public class GameOverScene: SKScene {
                     let reveal = SKTransition.flipHorizontal(withDuration: 0.5)
                     view?.presentScene(scene, transition: reveal)
                 }
-            } else if name == "buttonMenu" || name == "labelMenu" {
-                
+            } else if name == "buttonNext" || name == "labelNext" {
+                if let superview = self.container.superview as? MainView {
+                    superview.lastSlide()
+                }
             }
         }
     }
